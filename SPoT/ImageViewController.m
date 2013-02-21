@@ -73,7 +73,15 @@
     [self.scrollView addSubview:self.imageView];
     self.scrollView.maximumZoomScale = 5.0;
     self.scrollView.delegate = self;
+    self.splitViewController.delegate = self;
     [self resetImage];
+}
+
+// makes sure that master view is never hidden (when using iPad version in portrait mode)
+
+- (BOOL)splitViewController:(UISplitViewController *)svc shouldHideViewController:(UIViewController *)vc inOrientation:(UIInterfaceOrientation)orientation
+{
+    return NO;
 }
 
 // after every bounds change set the zoomScale to show as much of the photo as possible with
