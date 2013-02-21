@@ -7,6 +7,7 @@
 //
 
 #import "FlickrSpotTVC.h"
+#import "FlickrFetcher.h"
 
 @interface FlickrSpotTVC ()
 
@@ -14,108 +15,78 @@
 
 @implementation FlickrSpotTVC
 
-- (id)initWithStyle:(UITableViewStyle)style
+// sets the Model
+// reloads the UITableView (since Model is changing)
+
+- (void)setSpots:(NSArray *)spots
 {
-    self = [super initWithStyle:style];
-    if (self) {
-        // Custom initialization
+    _spots = spots;
+    [self.tableView reloadData];
+}
+
+#pragma mark - Segue
+
+// prepares for the "Show Photos in Spot" segue by seeing if the destination view controller of the segue
+//  understands the method "setPhotos:"
+// if it does, it sends setPhotos: to the destination view controller with
+//  the NSArray of NSDictionaries of the spot that was selected in the UITableView as the argument
+// also sets the title of the destination view controller to the spots's title
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([sender isKindOfClass:[UITableViewCell class]]) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+        if (indexPath) {
+            if ([segue.identifier isEqualToString:@"Show Photos in Spot"]) {
+                if ([segue.destinationViewController respondsToSelector:@selector(setPhotos:)]) {
+                    NSArray *array = [[self.spots objectAtIndex:indexPath.row] objectForKey:[self titleForRow:indexPath.row]];
+                    [segue.destinationViewController performSelector:@selector(setPhotos:) withObject:array];
+                    [segue.destinationViewController setTitle:[self titleForRow:indexPath.row]];
+                }
+            }
+        }
     }
-    return self;
 }
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
+#pragma mark - UITableViewDataSource
 
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
- 
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
-#pragma mark - Table view data source
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-#warning Potentially incomplete method implementation.
-    // Return the number of sections.
-    return 0;
-}
+// lets the UITableView know how many rows it should display
+// in this case, just the count of dictionaries in the Model's array
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-#warning Incomplete method implementation.
-    // Return the number of rows in the section.
-    return 0;
+    return [self.spots count];
 }
+
+// a helper method that looks in the Model for the spot dictionary at the given row
+//  and gets the last Key as a title (there will always be only one Key so with lastObject we ge the title that we want)
+
+- (NSString *)titleForRow:(NSUInteger)row
+{
+    return [[[self.spots objectAtIndex:row] allKeys] lastObject];
+}
+
+// a helper method that looks in the Model for the spot dictionary at the given row
+//  and gets the number of NSArray objects in that NSDictionary 
+
+- (NSString *)subtitleForRow:(NSUInteger)row
+{
+    return [NSString stringWithFormat:@"%d photos", [[[self.spots objectAtIndex:row] objectForKey:[self titleForRow:row]] count]];
+}
+
+// loads up a table view cell with the spot name and number of photos in that spot at the given row in the Model
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *CellIdentifier = @"Cell";
+    static NSString *CellIdentifier = @"Flickr Spot";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     
     // Configure the cell...
+    cell.textLabel.text = [self titleForRow:indexPath.row];
+    cell.detailTextLabel.text = [self subtitleForRow:indexPath.row];
     
     return cell;
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
-    else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-#pragma mark - Table view delegate
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Navigation logic may go here. Create and push another view controller.
-    /*
-     <#DetailViewController#> *detailViewController = [[<#DetailViewController#> alloc] initWithNibName:@"<#Nib name#>" bundle:nil];
-     // ...
-     // Pass the selected object to the new view controller.
-     [self.navigationController pushViewController:detailViewController animated:YES];
-     */
-}
 
 @end

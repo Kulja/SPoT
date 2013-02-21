@@ -71,10 +71,47 @@
 {
     [super viewDidLoad];
     [self.scrollView addSubview:self.imageView];
-    self.scrollView.minimumZoomScale = 0.2;
     self.scrollView.maximumZoomScale = 5.0;
     self.scrollView.delegate = self;
     [self resetImage];
+}
+
+// after every bounds change set the zoomScale to show as much of the photo as possible with
+//  no extra unused space
+
+- (void)viewDidLayoutSubviews
+{
+    CGFloat scaleWidth = self.scrollView.frame.size.width / self.imageView.bounds.size.width;
+    CGFloat scaleHeight = self.scrollView.frame.size.height / self.imageView.bounds.size.height;
+    
+    CGFloat minScale = MIN(scaleWidth, scaleHeight);
+    self.scrollView.minimumZoomScale = minScale;
+    self.scrollView.zoomScale = minScale;
+}
+
+// positioning the image view such that it is always in the center of the scroll view’s bounds
+
+- (void)centerScrollViewContents {
+    CGRect contentsFrame = self.imageView.frame;
+    
+    if (contentsFrame.size.width < self.scrollView.bounds.size.width) {
+        contentsFrame.origin.x = (self.scrollView.bounds.size.width - contentsFrame.size.width) / 2.0f;
+    } else {
+        contentsFrame.origin.x = 0.0f;
+    }
+    
+    if (contentsFrame.size.height < self.scrollView.bounds.size.height) {
+        contentsFrame.origin.y = (self.scrollView.bounds.size.height - contentsFrame.size.height) / 2.0f;
+    } else {
+        contentsFrame.origin.y = 0.0f;
+    }
+    
+    self.imageView.frame = contentsFrame;
+}
+
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView {
+    // The scroll view has zoomed, so you need to re-center the contents
+    [self centerScrollViewContents];
 }
 
 @end
