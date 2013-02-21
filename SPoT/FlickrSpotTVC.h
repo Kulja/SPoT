@@ -1,5 +1,5 @@
 //
-//  SPoTFirstViewController.h
+//  FlickrSpotTVC.h
 //  SPoT
 //
 //  Created by Marko Kuljanski on 2/20/13.
@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SPoTFirstViewController : UIViewController
+@interface FlickrSpotTVC : UITableViewController
 
 @end

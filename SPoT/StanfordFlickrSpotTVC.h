@@ -1,13 +1,13 @@
 //
-//  SPoTSecondViewController.h
+//  StanfordFlickrSpotTVC.h
 //  SPoT
 //
 //  Created by Marko Kuljanski on 2/20/13.
 //  Copyright (c) 2013 Marko Kuljanski. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "FlickrSpotTVC.h"
 
-@interface SPoTSecondViewController : UIViewController
+@interface StanfordFlickrSpotTVC : FlickrSpotTVC
 
 @end
