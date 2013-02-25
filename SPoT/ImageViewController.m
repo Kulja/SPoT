@@ -11,9 +11,33 @@
 @interface ImageViewController () <UIScrollViewDelegate>
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (strong, nonatomic) UIImageView *imageView;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *titleBarButtonItem;
+@property (weak, nonatomic) IBOutlet UIToolbar *toolbar;
 @end
 
 @implementation ImageViewController
+
+// set splitViewBarButtonItem when we are in split view controller
+
+- (void)setSplitViewBarButtonItem:(UIBarButtonItem *)barButtonItem
+{
+    UIToolbar *toolbar = [self toolbar]; // probably an outlet
+    NSMutableArray *toolbarItems = [toolbar.items mutableCopy];
+    if (_splitViewBarButtonItem) [toolbarItems removeObject:_splitViewBarButtonItem];
+    // put the bar button on the left of our existing toolbar
+    if (barButtonItem) [toolbarItems insertObject:barButtonItem atIndex:0];
+    toolbar.items = toolbarItems;
+    _splitViewBarButtonItem = barButtonItem;
+}
+
+
+// set title for titleBarButtonItem whenever we set title for our view controller
+
+- (void)setTitle:(NSString *)title
+{
+    super.title = title;
+    self.titleBarButtonItem.title = title;
+}
 
 // resets the image whenever the URL changes
 
@@ -73,15 +97,8 @@
     [self.scrollView addSubview:self.imageView];
     self.scrollView.maximumZoomScale = 5.0;
     self.scrollView.delegate = self;
-    self.splitViewController.delegate = self;
     [self resetImage];
-}
-
-// makes sure that master view is never hidden (when using iPad version in portrait mode)
-
-- (BOOL)splitViewController:(UISplitViewController *)svc shouldHideViewController:(UIViewController *)vc inOrientation:(UIInterfaceOrientation)orientation
-{
-    return NO;
+    self.titleBarButtonItem.title = self.title;
 }
 
 // after every bounds change set the zoomScale to show as much of the photo as possible with
@@ -89,12 +106,14 @@
 
 - (void)viewDidLayoutSubviews
 {
-    CGFloat scaleWidth = self.scrollView.frame.size.width / self.imageView.bounds.size.width;
-    CGFloat scaleHeight = self.scrollView.frame.size.height / self.imageView.bounds.size.height;
+    CGFloat scaleWidth = self.scrollView.bounds.size.width / self.imageView.bounds.size.width;
+    CGFloat scaleHeight = self.scrollView.bounds.size.height / self.imageView.bounds.size.height;
     
-    CGFloat minScale = MIN(scaleWidth, scaleHeight);
-    self.scrollView.minimumZoomScale = minScale;
-    self.scrollView.zoomScale = minScale;
+    self.scrollView.minimumZoomScale = MIN(scaleWidth, scaleHeight);
+    self.scrollView.zoomScale = MAX(scaleWidth, scaleHeight);
+
+    // whenever we change our bounds check if splitViewBarButtonItem should be set or not
+    self.splitViewBarButtonItem = self.splitViewBarButtonItem;
 }
 
 // positioning the image view such that it is always in the center of the scroll view’s bounds

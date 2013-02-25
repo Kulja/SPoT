@@ -10,6 +10,9 @@
 #import "FlickrFetcher.h"
 #import "ImageViewController.h"
 
+@interface FlickrPhotoTVC() <UISplitViewControllerDelegate>
+@end
+
 @implementation FlickrPhotoTVC
 
 // sets the Model
@@ -51,6 +54,23 @@
 
 #pragma mark - Segue
 
+// typical “setSplitViewBarButton:” method
+- (id)splitViewDetailWithBarButtonItem
+{
+    id detail = [self.splitViewController.viewControllers lastObject];
+    if (![detail respondsToSelector:@selector(setSplitViewBarButtonItem:)] ||
+        ![detail respondsToSelector:@selector(splitViewBarButtonItem)]) detail = nil;
+    return detail;
+}
+- (void)transferSplitViewBarButtonItemToViewController:(id)destinationViewController
+{
+    UIBarButtonItem *splitViewBarButtonItem = [[self splitViewDetailWithBarButtonItem] splitViewBarButtonItem];
+    [[self splitViewDetailWithBarButtonItem] setSplitViewBarButtonItem:nil];
+    if (splitViewBarButtonItem) {
+        [destinationViewController setSplitViewBarButtonItem:splitViewBarButtonItem];
+    }
+}
+
 // prepares for the "Show Image" segue by seeing if the destination view controller of the segue
 //  understands the method "setImageURL:"
 // if it does, it sends setImageURL: to the destination view controller with
@@ -64,15 +84,41 @@
         if (indexPath) {
             if ([segue.identifier isEqualToString:@"Show Image"]) {
                 if ([segue.destinationViewController respondsToSelector:@selector(setImageURL:)]) {
+                    
+                    [self transferSplitViewBarButtonItemToViewController:segue.destinationViewController];
+                    
                     NSURL *url = [FlickrFetcher urlForPhoto:self.photos[indexPath.row] format:FlickrPhotoFormatLarge];
                     [segue.destinationViewController performSelector:@selector(setImageURL:) withObject:url];
                     [segue.destinationViewController setTitle:[self titleForRow:indexPath.row]];
-                    
                     [self addPhotoToNSUserDefaults:self.photos[indexPath.row]];
+                    
+                    
                 }
             }
         }
     }
+}
+
+#pragma mark - UISplitViewControllerDelegate
+
+- (void)awakeFromNib
+{
+    self.splitViewController.delegate = self;
+}
+
+- (void)splitViewController:(UISplitViewController *)svc willHideViewController:(UIViewController *)aViewController withBarButtonItem:(UIBarButtonItem *)barButtonItem forPopoverController:(UIPopoverController *)pc
+{
+    // add the bar button from its toolbar
+    barButtonItem.title = @"Images";
+    ImageViewController *detailViewController = (ImageViewController *)[self.splitViewController.viewControllers lastObject];
+    [detailViewController setSplitViewBarButtonItem:barButtonItem];
+}
+
+- (void)splitViewController:(UISplitViewController *)sender willShowViewController:(UIViewController *)master invalidatingBarButtonItem:(UIBarButtonItem *)barButtonItem
+{
+    // remove the bar button from its toolbar
+    ImageViewController *detailViewController = (ImageViewController *)[self.splitViewController.viewControllers lastObject];
+    [detailViewController setSplitViewBarButtonItem:nil];
 }
 
 #pragma mark - UITableViewDataSource
@@ -113,20 +159,6 @@
     cell.detailTextLabel.text = [self subtitleForRow:indexPath.row];
     
     return cell;
-}
-
-// in iPad version we dont't use segues so instead we just set .ImageUrl to URL of selected image
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if ([[self.splitViewController.viewControllers lastObject] isKindOfClass:[ImageViewController class]]) {
-        ((ImageViewController *)[self.splitViewController.viewControllers lastObject]).imageURL = [FlickrFetcher urlForPhoto:self.photos[indexPath.row] format:FlickrPhotoFormatOriginal];
-        
-        // we want our view to call viewDidLayoutSubviews once the image is loaded
-        [((ImageViewController *)[self.splitViewController.viewControllers lastObject]) viewDidLayoutSubviews];
-        
-        [self addPhotoToNSUserDefaults:self.photos[indexPath.row]];
-    }
 }
 
 @end
