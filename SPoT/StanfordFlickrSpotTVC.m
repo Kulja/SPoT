@@ -11,11 +11,31 @@
 
 @implementation StanfordFlickrSpotTVC
 
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+    self.navigationItem.title = @"SPoT";
+    [self.refreshControl addTarget:self action:@selector(loadStanfordPhotosFromFlickr) forControlEvents:UIControlEventValueChanged];
+    [self loadStanfordPhotosFromFlickr];
+}
+
+- (void)loadStanfordPhotosFromFlickr
+{
+    [self.refreshControl beginRefreshing];
+    dispatch_queue_t stanfordPhotoLoaderQ = dispatch_queue_create("stanford photo loader", NULL);
+    dispatch_async(stanfordPhotoLoaderQ, ^{
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+        NSArray *arrayOfStanfordPhotos = [FlickrFetcher stanfordPhotos];
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self makeStanfordSpotsWithArrayOfPhotos:arrayOfStanfordPhotos];
+            [self.refreshControl endRefreshing];
+        });
+    });
+}
+
+- (void)makeStanfordSpotsWithArrayOfPhotos:(NSArray *)stanfordImages
+{
     // final array of dictionaries which will be sorted by tags
     //  we will use this because allKeys on dictionary does not preserve order
     NSMutableArray *sortedDictionariesInArray = [NSMutableArray array];
@@ -23,7 +43,7 @@
     // dictionary with stanford images sorted by keys (keys are tags)
     NSMutableDictionary *sortedPhotosByTags = [NSMutableDictionary dictionary];
     
-    for (NSDictionary *imageInfo in [FlickrFetcher stanfordPhotos]) {
+    for (NSDictionary *imageInfo in stanfordImages) {
         
         // getting FLICKR_TAGS out of our image and formating it to our needs
         NSArray *tempArray = [[imageInfo objectForKey:FLICKR_TAGS] componentsSeparatedByString:@" "];
@@ -37,7 +57,7 @@
         if ([tag length] > 0) {
             tag = [[tag substringToIndex:[tag length] - 1] capitalizedString];
         }
-
+        
         // if our formated tag exist (as a key) in our sortedPhotosByTags dictionary then add our image to it in an array
         if ([sortedPhotosByTags objectForKey:tag]) {
             [sortedPhotosByTags setObject:[[sortedPhotosByTags objectForKey:tag] arrayByAddingObject:imageInfo] forKey:tag];
@@ -58,8 +78,7 @@
         NSArray* sortedArray = [[sortedPhotosByTags objectForKey:key] sortedArrayUsingDescriptors:[NSArray arrayWithObject:photoTitleSortDescriptor]];
         [sortedDictionariesInArray addObject:[NSDictionary dictionaryWithObject:sortedArray forKey:key]];
     }
-
-    self.navigationItem.title = @"SPoT";
+    
     self.spots = sortedDictionariesInArray;
 }
 

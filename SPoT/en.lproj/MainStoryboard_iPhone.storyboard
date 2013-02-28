@@ -63,6 +63,9 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" id="akX-y2-AJ2"/>
+                    <refreshControl key="refreshControl" opaque="NO" multipleTouchEnabled="YES" contentMode="center" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" id="S3r-KW-xXS">
+                        <autoresizingMask key="autoresizingMask"/>
+                    </refreshControl>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="WLQ-MP-Buj" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -122,18 +125,22 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="F4l-gU-0ht"/>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="8l2-8Y-yJT"/>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="F4l-gU-0ht" firstAttribute="trailing" secondItem="v0Q-ec-gXU" secondAttribute="trailing" type="default" id="0IA-qV-sug"/>
                             <constraint firstItem="F4l-gU-0ht" firstAttribute="bottom" secondItem="v0Q-ec-gXU" secondAttribute="bottom" type="default" id="0XM-XN-G9P"/>
+                            <constraint firstAttribute="centerX" secondItem="8l2-8Y-yJT" secondAttribute="centerX" type="user" id="9G2-62-DhZ"/>
                             <constraint firstItem="F4l-gU-0ht" firstAttribute="leading" secondItem="v0Q-ec-gXU" secondAttribute="leading" type="default" id="Ujx-gb-1d4"/>
+                            <constraint firstAttribute="centerY" secondItem="8l2-8Y-yJT" secondAttribute="centerY" type="user" id="e72-7u-WU9"/>
                             <constraint firstItem="F4l-gU-0ht" firstAttribute="top" secondItem="v0Q-ec-gXU" secondAttribute="top" type="default" id="p09-Oz-ntu"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Qhp-Ss-8L4"/>
                     <connections>
                         <outlet property="scrollView" destination="F4l-gU-0ht" id="jeX-1r-uKN"/>
+                        <outlet property="spinner" destination="8l2-8Y-yJT" id="FIo-TG-z8N"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="b1t-cm-tDN" userLabel="First Responder" sceneMemberID="firstResponder"/>

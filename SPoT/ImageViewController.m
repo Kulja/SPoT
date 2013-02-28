@@ -13,9 +13,44 @@
 @property (strong, nonatomic) UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *titleBarButtonItem;
 @property (weak, nonatomic) IBOutlet UIToolbar *toolbar;
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *spinner;
+@property (readonly, strong, nonatomic) NSURL *imageCacheFilePath;
+@property (readonly, strong, nonatomic) NSURL *cacheDirectory;
+@property (readonly, nonatomic) double cacheSize;
 @end
 
 @implementation ImageViewController
+
+- (double)cacheSize
+{
+    if (self.scrollView.bounds.size.width > 600) {
+        return 10000000;
+    } else {
+        return 3000000;
+    }
+}
+
+- (NSURL *)cacheDirectory
+{
+    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSArray *paths = [fileManager URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask];
+    NSURL *url = [[paths lastObject] URLByAppendingPathComponent:@"/images/"];
+    if (![url checkResourceIsReachableAndReturnError:nil]) {
+        [fileManager createDirectoryAtURL:url withIntermediateDirectories:NO attributes:nil error:nil];
+    }
+
+    return url;
+}
+
+- (NSURL *)imageCacheFilePath
+{
+    NSURL *url = nil;
+    if (self.imageURL) {
+        // getting just the last part of url with extension
+        url = [self.cacheDirectory URLByAppendingPathComponent:[[self.imageURL pathComponents] lastObject]];
+    }
+    return url;
+}
 
 // set splitViewBarButtonItem when we are in split view controller
 
@@ -29,7 +64,6 @@
     toolbar.items = toolbarItems;
     _splitViewBarButtonItem = barButtonItem;
 }
-
 
 // set title for titleBarButtonItem whenever we set title for our view controller
 
@@ -47,7 +81,7 @@
     [self resetImage];
 }
 
-// fetches the data from the URL
+// fetches the data from the URL or from cache
 // turns it into an image
 // adjusts the scroll view's content size to fit the image
 // sets the image as the image view's image
@@ -57,16 +91,62 @@
     if (self.scrollView) {
         self.scrollView.contentSize = CGSizeZero;
         self.imageView.image = nil;
+        NSURL *imageURL = self.imageURL;
         
-        NSData *imageData = [[NSData alloc] initWithContentsOfURL:self.imageURL];
-        UIImage *image = [[UIImage alloc] initWithData:imageData];
-        if (image) {
-            self.scrollView.zoomScale = 1.0;
-            self.scrollView.contentSize = image.size;
-            self.imageView.image = image;
-            self.imageView.frame = CGRectMake(0, 0, image.size.width, image.size.height);
-        }
+        [self.spinner startAnimating];
+        dispatch_queue_t imageFetchQ = dispatch_queue_create("image fetcher", NULL);
+        dispatch_async(imageFetchQ, ^{
+            [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+            NSData *imageData = [NSData dataWithContentsOfURL:self.imageCacheFilePath];
+            UIImage *image = [UIImage imageWithData:imageData];
+            if (!image) {
+                imageData = [[NSData alloc] initWithContentsOfURL:self.imageURL];
+                image = [[UIImage alloc] initWithData:imageData];
+            }
+            [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+            
+            if (self.imageURL == imageURL) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (image) {
+                        self.scrollView.zoomScale = 1.0;
+                        self.scrollView.contentSize = image.size;
+                        self.imageView.image = image;
+                        self.imageView.frame = CGRectMake(0, 0, image.size.width, image.size.height);
+                        
+                        [self viewDidLayoutSubviews];
+                        [self savePhotoInCache:imageData];
+                    }
+                    [self.spinner stopAnimating];
+                });
+            }
+        });
     }
+}
+
+// image caching
+
+- (void)savePhotoInCache:(NSData *)imageData
+{
+    dispatch_queue_t imageFetchQ = dispatch_queue_create("image writter", NULL);
+    dispatch_async(imageFetchQ, ^{
+        [imageData writeToURL:self.imageCacheFilePath atomically:YES];
+        
+        NSFileManager *fileManager = [[NSFileManager alloc] init];
+        double cache_folder_size = 0;
+        NSURL *lastAccessedImagePath;
+        for (NSURL *url in [fileManager contentsOfDirectoryAtURL:self.cacheDirectory includingPropertiesForKeys:[NSArray arrayWithObjects:NSURLFileSizeKey, NSURLContentAccessDateKey, nil] options:NSDirectoryEnumerationSkipsHiddenFiles error:nil]) {
+            cache_folder_size += [[[url resourceValuesForKeys:[NSArray arrayWithObject:NSURLFileSizeKey] error:nil] objectForKey:NSURLFileSizeKey] doubleValue];
+            
+            // making sure that lastly accessed photo path is in lastAccessedImagePath
+            if (([[[lastAccessedImagePath resourceValuesForKeys:[NSArray arrayWithObject:NSURLContentAccessDateKey] error:nil] objectForKey:NSURLContentAccessDateKey] compare:[[url resourceValuesForKeys:[NSArray arrayWithObject:NSURLContentAccessDateKey] error:nil] objectForKey:NSURLContentAccessDateKey]] == NSOrderedDescending) || !lastAccessedImagePath) {
+                lastAccessedImagePath = url;
+            }
+        }
+        
+        if (cache_folder_size > self.cacheSize) {
+            [fileManager removeItemAtURL:lastAccessedImagePath error:nil];
+        }
+    });
 }
 
 // lazy instantiation
@@ -111,6 +191,8 @@
     
     self.scrollView.minimumZoomScale = MIN(scaleWidth, scaleHeight);
     self.scrollView.zoomScale = MAX(scaleWidth, scaleHeight);
+    
+    [self centerScrollViewContents];
 
     // whenever we change our bounds check if splitViewBarButtonItem should be set or not
     self.splitViewBarButtonItem = self.splitViewBarButtonItem;

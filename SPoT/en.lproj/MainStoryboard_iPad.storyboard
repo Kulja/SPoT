@@ -16,7 +16,7 @@
                 </splitViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="IBB-eq-llv" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-872" y="-4539"/>
+            <point key="canvasLocation" x="-704" y="-3763"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="3gs-oI-7P9">
@@ -36,7 +36,7 @@
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pbW-SU-mnb" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="151" y="-5164"/>
+            <point key="canvasLocation" x="319" y="-4388"/>
         </scene>
         <!--Stanford Flickr SpotTVC-->
         <scene sceneID="FXf-M9-LBA">
@@ -81,10 +81,13 @@
                     </tableView>
                     <navigationItem key="navigationItem" id="F2C-wJ-JhE"/>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
+                    <refreshControl key="refreshControl" opaque="NO" multipleTouchEnabled="YES" contentMode="center" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" id="h9j-b0-TH3">
+                        <autoresizingMask key="autoresizingMask"/>
+                    </refreshControl>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="IyK-IV-d7j" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1215" y="-5544"/>
+            <point key="canvasLocation" x="1383" y="-4768"/>
         </scene>
         <!--Flickr PhotoTVC-->
         <scene sceneID="swF-kf-PkR">
@@ -132,7 +135,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4m9-Tm-m2d" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1775" y="-5544"/>
+            <point key="canvasLocation" x="1943" y="-4768"/>
         </scene>
         <!--Image View Controller-->
         <scene sceneID="7G6-lp-b5i">
@@ -143,6 +146,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G4M-0z-G8K"/>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="9Zz-qe-xwM"/>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3sO-HV-s0T">
                                 <items>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="5H4-dH-Auv"/>
@@ -153,8 +157,10 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="9Zz-qe-xwM" firstAttribute="centerY" secondItem="WPV-lk-Yvc" secondAttribute="centerY" type="default" id="BGQ-Eh-03v"/>
                             <constraint firstItem="3sO-HV-s0T" firstAttribute="trailing" secondItem="WPV-lk-Yvc" secondAttribute="trailing" type="default" id="Jm0-1H-5Sn"/>
                             <constraint firstItem="G4M-0z-G8K" firstAttribute="leading" secondItem="WPV-lk-Yvc" secondAttribute="leading" type="default" id="ObW-MQ-9PQ"/>
+                            <constraint firstItem="9Zz-qe-xwM" firstAttribute="centerX" secondItem="3sO-HV-s0T" secondAttribute="centerX" type="default" id="TxZ-HW-Ytx"/>
                             <constraint firstItem="G4M-0z-G8K" firstAttribute="bottom" secondItem="WPV-lk-Yvc" secondAttribute="bottom" type="default" id="kMg-Ha-ej2"/>
                             <constraint firstItem="3sO-HV-s0T" firstAttribute="top" secondItem="WPV-lk-Yvc" secondAttribute="top" type="default" id="s7C-jx-fIB"/>
                             <constraint firstItem="G4M-0z-G8K" firstAttribute="top" secondItem="3sO-HV-s0T" secondAttribute="bottom" type="default" id="uEp-U1-gPG"/>
@@ -166,13 +172,14 @@
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
                     <connections>
                         <outlet property="scrollView" destination="G4M-0z-G8K" id="USd-nl-EvD"/>
+                        <outlet property="spinner" destination="9Zz-qe-xwM" id="B4x-oH-qFR"/>
                         <outlet property="titleBarButtonItem" destination="E0c-Cm-R71" id="elI-5m-nxi"/>
                         <outlet property="toolbar" destination="3sO-HV-s0T" id="ajg-Yn-waF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gUp-2w-tn1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2370" y="-4564"/>
+            <point key="canvasLocation" x="2538" y="-3788"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="fXH-8N-bWS">
@@ -192,7 +199,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="j2C-fd-EE8" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="692" y="-5536"/>
+            <point key="canvasLocation" x="860" y="-4760"/>
         </scene>
         <!--Recent Stanford Flickr PhotoTVC-->
         <scene sceneID="S8V-U9-eZs">
@@ -240,7 +247,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PuP-ck-iek" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1287" y="-3968"/>
+            <point key="canvasLocation" x="1455" y="-3192"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="rdF-ht-Aj8">
@@ -260,7 +267,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jjw-eD-vqW" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="740" y="-3952"/>
+            <point key="canvasLocation" x="908" y="-3176"/>
         </scene>
     </scenes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
@@ -269,6 +276,6 @@
         <simulatedScreenMetrics key="destination"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="GOa-IG-OFK"/>
+        <segue reference="NMa-Yy-2dw"/>
     </inferredMetricsTieBreakers>
 </document>

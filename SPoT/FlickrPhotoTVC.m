@@ -55,6 +55,7 @@
 #pragma mark - Segue
 
 // typical “setSplitViewBarButton:” method
+
 - (id)splitViewDetailWithBarButtonItem
 {
     id detail = [self.splitViewController.viewControllers lastObject];
@@ -62,6 +63,7 @@
         ![detail respondsToSelector:@selector(splitViewBarButtonItem)]) detail = nil;
     return detail;
 }
+
 - (void)transferSplitViewBarButtonItemToViewController:(id)destinationViewController
 {
     UIBarButtonItem *splitViewBarButtonItem = [[self splitViewDetailWithBarButtonItem] splitViewBarButtonItem];
@@ -85,14 +87,16 @@
             if ([segue.identifier isEqualToString:@"Show Image"]) {
                 if ([segue.destinationViewController respondsToSelector:@selector(setImageURL:)]) {
                     
-                    [self transferSplitViewBarButtonItemToViewController:segue.destinationViewController];
-                    
-                    NSURL *url = [FlickrFetcher urlForPhoto:self.photos[indexPath.row] format:FlickrPhotoFormatLarge];
+                    FlickrPhotoFormat fpf = FlickrPhotoFormatLarge;
+                    if ([self splitViewDetailWithBarButtonItem]) {
+                        [self transferSplitViewBarButtonItemToViewController:segue.destinationViewController];
+                        fpf = FlickrPhotoFormatOriginal;
+                    }
+
+                    NSURL *url = [FlickrFetcher urlForPhoto:self.photos[indexPath.row] format:fpf];
                     [segue.destinationViewController performSelector:@selector(setImageURL:) withObject:url];
                     [segue.destinationViewController setTitle:[self titleForRow:indexPath.row]];
                     [self addPhotoToNSUserDefaults:self.photos[indexPath.row]];
-                    
-                    
                 }
             }
         }
@@ -110,15 +114,13 @@
 {
     // add the bar button from its toolbar
     barButtonItem.title = @"Images";
-    ImageViewController *detailViewController = (ImageViewController *)[self.splitViewController.viewControllers lastObject];
-    [detailViewController setSplitViewBarButtonItem:barButtonItem];
+    [[self splitViewDetailWithBarButtonItem] setSplitViewBarButtonItem:barButtonItem];
 }
 
 - (void)splitViewController:(UISplitViewController *)sender willShowViewController:(UIViewController *)master invalidatingBarButtonItem:(UIBarButtonItem *)barButtonItem
 {
     // remove the bar button from its toolbar
-    ImageViewController *detailViewController = (ImageViewController *)[self.splitViewController.viewControllers lastObject];
-    [detailViewController setSplitViewBarButtonItem:nil];
+    [[self splitViewDetailWithBarButtonItem] setSplitViewBarButtonItem:nil];
 }
 
 #pragma mark - UITableViewDataSource
