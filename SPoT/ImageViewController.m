@@ -108,7 +108,7 @@
             if (self.imageURL == imageURL) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (image) {
-                        self.scrollView.zoomScale = 1.0;
+                        //self.scrollView.zoomScale = 1.0;
                         self.scrollView.contentSize = image.size;
                         self.imageView.image = image;
                         self.imageView.frame = CGRectMake(0, 0, image.size.width, image.size.height);
@@ -189,8 +189,10 @@
     CGFloat scaleWidth = self.scrollView.bounds.size.width / self.imageView.bounds.size.width;
     CGFloat scaleHeight = self.scrollView.bounds.size.height / self.imageView.bounds.size.height;
     
-    self.scrollView.minimumZoomScale = MIN(scaleWidth, scaleHeight);
-    self.scrollView.zoomScale = MAX(scaleWidth, scaleHeight);
+    if (!scaleWidth == 0 && !scaleHeight == 0) {
+        self.scrollView.minimumZoomScale = MIN(scaleWidth, scaleHeight);
+        self.scrollView.zoomScale = MAX(scaleWidth, scaleHeight);
+    }
     
     [self centerScrollViewContents];
 
