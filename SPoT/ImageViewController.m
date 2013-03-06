@@ -127,24 +127,28 @@
 
 - (void)savePhotoInCache:(NSData *)imageData
 {
+    NSMutableArray *filesInCache = [[NSMutableArray alloc] init];
+    
     dispatch_queue_t imageFetchQ = dispatch_queue_create("image writter", NULL);
     dispatch_async(imageFetchQ, ^{
         [imageData writeToURL:self.imageCacheFilePath atomically:YES];
-        
         NSFileManager *fileManager = [[NSFileManager alloc] init];
         double cache_folder_size = 0;
-        NSURL *lastAccessedImagePath;
         for (NSURL *url in [fileManager contentsOfDirectoryAtURL:self.cacheDirectory includingPropertiesForKeys:[NSArray arrayWithObjects:NSURLFileSizeKey, NSURLContentAccessDateKey, nil] options:NSDirectoryEnumerationSkipsHiddenFiles error:nil]) {
             cache_folder_size += [[[url resourceValuesForKeys:[NSArray arrayWithObject:NSURLFileSizeKey] error:nil] objectForKey:NSURLFileSizeKey] doubleValue];
-            
-            // making sure that lastly accessed photo path is in lastAccessedImagePath
-            if (([[[lastAccessedImagePath resourceValuesForKeys:[NSArray arrayWithObject:NSURLContentAccessDateKey] error:nil] objectForKey:NSURLContentAccessDateKey] compare:[[url resourceValuesForKeys:[NSArray arrayWithObject:NSURLContentAccessDateKey] error:nil] objectForKey:NSURLContentAccessDateKey]] == NSOrderedDescending) || !lastAccessedImagePath) {
-                lastAccessedImagePath = url;
-            }
+
+            // adding file urls and dates to an array
+            [filesInCache addObject:[NSDictionary dictionaryWithObjectsAndKeys:url, @"url", [[url resourceValuesForKeys:[NSArray arrayWithObject:NSURLContentAccessDateKey] error:nil] objectForKey:NSURLContentAccessDateKey], @"date", nil]];
         }
         
-        if (cache_folder_size > self.cacheSize) {
-            [fileManager removeItemAtURL:lastAccessedImagePath error:nil];
+        // sorting file urls by date
+        NSSortDescriptor *key = [[NSSortDescriptor alloc] initWithKey:@"date" ascending:NO];
+        NSArray *sortedFilesInCache = [filesInCache sortedArrayUsingDescriptors:@[key]];
+        
+        // deleting lastly accessed file in our sorted file urls
+        while (cache_folder_size > self.cacheSize) {
+            cache_folder_size -= [[[[[sortedFilesInCache lastObject] objectForKey:@"url"] resourceValuesForKeys:[NSArray arrayWithObject:NSURLFileSizeKey] error:nil] objectForKey:NSURLFileSizeKey] doubleValue];
+            [fileManager removeItemAtURL:[[sortedFilesInCache lastObject] objectForKey:@"url"] error:nil];
         }
     });
 }
